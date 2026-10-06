@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meu Controle Financeiro</title>
+<style>
+:root{--bg:#f5f6fa;--card:#fff;--text:#171923;--muted:#73798c;--line:#e8eaf0;--accent:#635bff;--green:#18a66a;--red:#e04f5f;--yellow:#e5a72a;--shadow:0 10px 30px rgba(22,24,35,.06)}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif;background:var(--bg);color:var(--text)}
+.app{display:flex;min-height:100vh}.sidebar{width:240px;background:#11131a;color:#fff;padding:24px 16px;position:fixed;inset:0 auto 0 0}
+.brand{font-weight:800;font-size:19px;padding:8px 12px 28px}.brand span{color:#8c86ff}
+.nav button{width:100%;border:0;background:transparent;color:#aeb2c0;text-align:left;padding:13px 14px;border-radius:10px;font-size:14px;cursor:pointer;margin:3px 0}.nav button.active,.nav button:hover{background:#252833;color:#fff}
+.main{margin-left:240px;width:calc(100% - 240px);padding:30px;max-width:1500px}.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}.top h1{margin:0;font-size:27px}.top p{margin:5px 0;color:var(--muted);font-size:14px}
+.btn{border:0;border-radius:10px;padding:11px 16px;font-weight:700;cursor:pointer}.primary{background:var(--accent);color:#fff}.secondary{background:#fff;border:1px solid var(--line);color:var(--text)}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;box-shadow:var(--shadow)}.label{font-size:13px;color:var(--muted)}.value{font-size:25px;font-weight:800;margin-top:9px}.green{color:var(--green)}.red{color:var(--red)}.accent{color:var(--accent)}
+.grid{display:grid;grid-template-columns:1.35fr 1fr;gap:18px;margin-top:18px}.card h2{font-size:16px;margin:0 0 18px}.barrow{margin:15px 0}.barhead{display:flex;justify-content:space-between;font-size:13px;margin-bottom:7px}.bar{height:8px;background:#eceef4;border-radius:20px;overflow:hidden}.bar i{display:block;height:100%;background:var(--accent);border-radius:20px}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:13px 8px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-weight:600}.pill{padding:5px 9px;border-radius:20px;font-size:11px;font-weight:700}.pill.green{background:#e7f8f0}.pill.red{background:#fdecef}.pill.yellow{background:#fff6dc}.actions button{border:0;background:transparent;cursor:pointer;color:var(--muted)}
+.page{display:none}.page.active{display:block}.toolbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.toolbar h2{margin:0}.filters{display:flex;gap:8px}
+input,select{width:100%;padding:11px 12px;border:1px solid #dfe2ea;border-radius:9px;background:#fff;font:inherit;outline:none}input:focus,select:focus{border-color:var(--accent)}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px;font-weight:600}.full{grid-column:1/-1}
+.modal{position:fixed;inset:0;background:rgba(12,14,20,.48);display:none;align-items:center;justify-content:center;padding:20px;z-index:5}.modal.open{display:flex}.modalbox{background:#fff;border-radius:18px;width:min(620px,100%);padding:24px;box-shadow:0 25px 70px rgba(0,0,0,.18)}.modalhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}.close{border:0;background:#f1f2f6;width:34px;height:34px;border-radius:50%;cursor:pointer}.modalfoot{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
+.empty{text-align:center;padding:35px;color:var(--muted)}.notice{background:#f0efff;color:#4b45b5;border-radius:12px;padding:13px;margin-top:15px;font-size:13px}
+@media(max-width:900px){.sidebar{width:75px}.brand{font-size:0}.brand span{font-size:20px}.nav button{font-size:0;text-align:center}.nav button:first-letter{font-size:18px}.main{margin-left:75px;width:calc(100% - 75px);padding:20px}.cards{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}}
+@media(max-width:600px){.cards{grid-template-columns:1fr}.formgrid{grid-template-columns:1fr}.full{grid-column:auto}.main{padding:14px}.top{align-items:flex-start}.top h1{font-size:22px}table{font-size:12px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand">Meu <span>Financeiro</span></div>
+  <nav class="nav">
+    <button class="active" data-page="dashboard">◉ &nbsp; Visão geral</button>
+    <button data-page="movimentos">↕ &nbsp; Movimentações</button>
+    <button data-page="recorrentes">↻ &nbsp; Recorrentes</button>
+  </nav>
+</aside>
+
+<main class="main">
+  <section id="dashboard" class="page active">
+    <div class="top"><div><h1>Visão geral</h1><p id="today"></p></div><button class="btn primary" onclick="openMovement()">+ Nova movimentação</button></div>
+    <div class="cards">
+      <div class="card"><div class="label">Saldo atual</div><div id="balance" class="value">R$ 0,00</div></div>
+      <div class="card"><div class="label">Entradas</div><div id="income" class="value green">R$ 0,00</div></div>
+      <div class="card"><div class="label">Despesas pagas</div><div id="expense" class="value red">R$ 0,00</div></div>
+      <div class="card"><div class="label">Saldo previsto</div><div id="forecast" class="value accent">R$ 0,00</div></div>
+    </div>
+    <div class="grid">
+      <div class="card"><h2>Gastos por categoria</h2><div id="categories"></div></div>
+      <div class="card"><h2>Próximos compromissos</h2><div id="upcoming"></div></div>
+    </div>
+    <div class="card" style="margin-top:18px"><h2>Últimas movimentações</h2><div id="recent"></div></div>
+  </section>
+
+  <section id="movimentos" class="page">
+    <div class="top"><div><h1>Movimentações</h1><p>Entradas e saídas da sua vida financeira.</p></div><button class="btn primary" onclick="openMovement()">+ Nova movimentação</button></div>
+    <div class="card"><div class="toolbar"><h2>Histórico</h2><div class="filters"><select id="filterType" onchange="renderMovements()"><option value="">Todos</option><option value="entrada">Entradas</option><option value="saida">Saídas</option></select></div></div><div id="movementTable"></div></div>
+  </section>
+
+  <section id="recorrentes" class="page">
+    <div class="top"><div><h1>Recorrentes</h1><p>Despesas e dívidas previstas para os próximos meses.</p></div><button class="btn primary" onclick="openRecurring()">+ Novo compromisso</button></div>
+    <div class="card"><div class="toolbar"><h2>Compromissos cadastrados</h2></div><div id="recurringTable"></div></div>
+    <div class="notice">Dica: cadastre parcelas com quantidade total para acompanhar automaticamente quanto ainda falta pagar.</div>
+  </section>
+</main>
+</div>
+
+<div class="modal" id="movementModal"><div class="modalbox">
+ <div class="modalhead"><h2>Nova movimentação</h2><button class="close" onclick="closeModal('movementModal')">×</button></div>
+ <form id="movementForm"><div class="formgrid">
+  <div class="field"><label>Descrição</label><input id="mDesc" required placeholder="Ex.: Mercado"></div>
+  <div class="field"><label>Valor (R$)</label><input id="mValue" required type="number" step="0.01" min="0.01"></div>
+  <div class="field"><label>Data</label><input id="mDate" required type="date"></div>
+  <div class="field"><label>Categoria</label><select id="mCat"><option>Alimentação</option><option>Transporte</option><option>Moradia</option><option>Estudos</option><option>Lazer</option><option>Saúde</option><option>Compras</option><option>Trabalho</option><option>Outros</option></select></div>
+  <div class="field"><label>Tipo</label><select id="mType"><option value="saida">Saída</option><option value="entrada">Entrada</option></select></div>
+  <div class="field"><label>Status</label><select id="mStatus"><option value="pago">Pago</option><option value="pendente">Pendente</option></select></div>
+ </div><div class="modalfoot"><button type="button" class="btn secondary" onclick="closeModal('movementModal')">Cancelar</button><button class="btn primary">Salvar</button></div></form>
+</div></div>
+
+<div class="modal" id="recurringModal"><div class="modalbox">
+ <div class="modalhead"><h2>Novo compromisso</h2><button class="close" onclick="closeModal('recurringModal')">×</button></div>
+ <form id="recurringForm"><div class="formgrid">
+  <div class="field"><label>Nome</label><input id="rDesc" required placeholder="Ex.: Faculdade"></div>
+  <div class="field"><label>Valor da parcela (R$)</label><input id="rValue" required type="number" step="0.01" min="0.01"></div>
+  <div class="field"><label>Primeiro vencimento</label><input id="rDate" required type="date"></div>
+  <div class="field"><label>Periodicidade</label><select id="rPeriod"><option value="mensal">Mensal</option><option value="semanal">Semanal</option><option value="anual">Anual</option></select></div>
+  <div class="field"><label>Total de parcelas</label><input id="rTotal" type="number" min="1" placeholder="Ex.: 12"></div>
+  <div class="field"><label>Parcela atual</label><input id="rCurrent" type="number" min="1" value="1"></div>
+  <div class="field full"><label>Categoria</label><select id="rCat"><option>Moradia</option><option>Estudos</option><option>Saúde</option><option>Lazer</option><option>Compras</option><option>Transporte</option><option>Outros</option></select></div>
+ </div><div class="modalfoot"><button type="button" class="btn secondary" onclick="closeModal('recurringModal')">Cancelar</button><button class="btn primary">Salvar</button></div></form>
+</div></div>
+
+<script>
+const money = n => new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(n||0);
+const keyM='finance_movements_v1', keyR='finance_recurring_v1';
+let movements=JSON.parse(localStorage.getItem(keyM)||'[]');
+let recurring=JSON.parse(localStorage.getItem(keyR)||'[]');
+const save=()=>{localStorage.setItem(keyM,JSON.stringify(movements));localStorage.setItem(keyR,JSON.stringify(recurring));renderAll()};
+const todayISO=()=>new Date().toISOString().slice(0,10);
+document.getElementById('today').textContent=new Intl.DateTimeFormat('pt-BR',{dateStyle:'full'}).format(new Date());
+document.getElementById('mDate').value=todayISO(); document.getElementById('rDate').value=todayISO();
+
+document.querySelectorAll('.nav button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));document.getElementById(b.dataset.page).classList.add('active');renderAll()});
+function openMovement(){document.getElementById('movementModal').classList.add('open')}
+function openRecurring(){document.getElementById('recurringModal').classList.add('open')}
+function closeModal(id){document.getElementById(id).classList.remove('open')}
+
+document.getElementById('movementForm').onsubmit=e=>{
+ e.preventDefault(); movements.unshift({id:Date.now(),desc:mDesc.value,value:+mValue.value,date:mDate.value,cat:mCat.value,type:mType.value,status:mStatus.value});save();e.target.reset();mDate.value=todayISO();closeModal('movementModal')
+};
+document.getElementById('recurringForm').onsubmit=e=>{
+ e.preventDefault(); recurring.unshift({id:Date.now(),desc:rDesc.value,value:+rValue.value,date:rDate.value,period:rPeriod.value,total:+rTotal.value||null,current:+rCurrent.value||1,cat:rCat.value});save();e.target.reset();rDate.value=todayISO();rCurrent.value=1;closeModal('recurringModal')
+};
+
+function delM(id){if(confirm('Excluir esta movimentação?')){movements=movements.filter(x=>x.id!==id);save()}}
+function delR(id){if(confirm('Excluir este compromisso?')){recurring=recurring.filter(x=>x.id!==id);save()}}
+function fmtDate(s){return new Intl.DateTimeFormat('pt-BR').format(new Date(s+'T12:00:00'))}
+function renderDashboard(){
+ const income=movements.filter(x=>x.type==='entrada'&&x.status==='pago').reduce((a,x)=>a+x.value,0);
+ const expense=movements.filter(x=>x.type==='saida'&&x.status==='pago').reduce((a,x)=>a+x.value,0);
+ const pending=movements.filter(x=>x.type==='saida'&&x.status==='pendente').reduce((a,x)=>a+x.value,0);
+ const future=recurring.reduce((a,x)=>a+x.value,0);
+ balance.textContent=money(income-expense); incomeEl=income; document.getElementById('income').textContent=money(income);document.getElementById('expense').textContent=money(expense);document.getElementById('forecast').textContent=money(income-expense-pending-future);
+ const sums={};movements.filter(x=>x.type==='saida').forEach(x=>sums[x.cat]=(sums[x.cat]||0)+x.value);let vals=Object.entries(sums).sort((a,b)=>b[1]-a[1]);let max=vals[0]?.[1]||1;
+ categories.innerHTML=vals.length?vals.slice(0,6).map(([k,v])=>`<div class="barrow"><div class="barhead"><span>${k}</span><b>${money(v)}</b></div><div class="bar"><i style="width:${v/max*100}%"></i></div></div>`).join(''):'<div class="empty">Ainda não há despesas.</div>';
+ let up=[...recurring].sort((a,b)=>a.date.localeCompare(b.date)).slice(0,5);
+ upcoming.innerHTML=up.length?up.map(x=>`<div style="display:flex;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line)"><div><b>${x.desc}</b><div class="label">${fmtDate(x.date)} · ${x.period}</div></div><b class="red">${money(x.value)}</b></div>`).join(''):'<div class="empty">Nenhum compromisso cadastrado.</div>';
+ let rec=[...movements].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6);recent.innerHTML=movementRows(rec,true);
+}
+function movementRows(arr,mini=false){if(!arr.length)return '<div class="empty">Nenhuma movimentação encontrada.</div>';return `<table><thead><tr><th>Descrição</th><th>Categoria</th><th>Data</th><th>Valor</th><th>Status</th>${mini?'':'<th></th>'}</tr></thead><tbody>${arr.map(x=>`<tr><td><b>${x.desc}</b></td><td>${x.cat}</td><td>${fmtDate(x.date)}</td><td class="${x.type==='entrada'?'green':'red'}">${x.type==='entrada'?'+':'-'} ${money(x.value)}</td><td><span class="pill ${x.status==='pago'?'green':'yellow'}">${x.status==='pago'?'Pago':'Pendente'}</span></td>${mini?'':'<td class="actions"><button onclick="delM('+x.id+')">Excluir</button></td>'}</tr>`).join('')}</tbody></table>`}
+function renderMovements(){let f=document.getElementById('filterType').value;let arr=f?movements.filter(x=>x.type===f):movements;document.getElementById('movementTable').innerHTML=movementRows(arr)}
+function renderRecurring(){if(!recurring.length){recurringTable.innerHTML='<div class="empty">Nenhum compromisso cadastrado.</div>';return}recurringTable.innerHTML=`<table><thead><tr><th>Compromisso</th><th>Valor</th><th>Vencimento</th><th>Recorrência</th><th>Parcelas</th><th>Categoria</th><th></th></tr></thead><tbody>${recurring.map(x=>{let part=x.total?`${x.current}/${x.total}`:'Recorrente';let left=x.total?` · faltam ${Math.max(x.total-x.current,0)}`:'';return `<tr><td><b>${x.desc}</b></td><td class="red">${money(x.value)}</td><td>${fmtDate(x.date)}</td><td>${x.period}</td><td>${part}${left}</td><td>${x.cat}</td><td class="actions"><button onclick="delR(${x.id})">Excluir</button></td></tr>`}).join('')}</tbody></table>`}
+function renderAll(){renderDashboard();renderMovements();renderRecurring()}
+renderAll();
+</script>
+</body>
+</html>
